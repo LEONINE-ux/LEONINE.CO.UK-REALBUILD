@@ -1,4 +1,4 @@
-# LEONINE (V1.0)
+# LEONINE (V1.1)
 
 Static site: no build step. Open `index.html` to preview.
 
@@ -24,3 +24,4 @@ There is no shop. Prints, music and bookings are requested through the Enquire f
 
 ## Changelog
 - V1.0 First public version: photo gallery, movies section (clips to come), private enquiry form, legal page, no shop.
+- V1.1 Small pyramid mark on photographs, pyramid section dividers, gentle reveals, scroll progress line.

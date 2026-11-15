@@ -32,14 +32,14 @@ nav a:hover{color:var(--ink);border-color:var(--gold2)}
 .pyr.sm{position:absolute;left:1%;top:-34%;width:30%}
 .hero h1{margin:0;font-weight:300;font-stretch:125%;font-size:clamp(38px,10vw,170px);letter-spacing:.14em;line-height:1;text-transform:uppercase}
 /* sections */
-section{padding:clamp(88px,13vw,200px) clamp(20px,5vw,72px);border-top:1px solid var(--line)}
+section{position:relative;padding:clamp(88px,13vw,200px) clamp(20px,5vw,72px);border-top:1px solid var(--line)}
 section h2{counter-increment:s;display:flex;align-items:baseline;gap:18px;margin:0 0 clamp(36px,5vw,72px);font:400 11px/1 var(--sans);letter-spacing:.36em;text-transform:uppercase;color:var(--mute)}
 section h2::before{content:"0" counter(s);color:var(--gold);letter-spacing:.2em}
 section h2::after{content:"";flex:1;max-width:240px;height:1px;background:var(--line2)}
 .note{margin:28px 0 0;color:var(--mute);font:italic 300 19px/1.4 var(--serif)}
 /* gallery */
 .masonry{columns:3 320px;column-gap:clamp(16px,2.6vw,44px)}
-.pm{display:block;width:100%;margin:0 0 clamp(16px,2.6vw,44px);padding:0;border:0;background:none;cursor:zoom-in;break-inside:avoid;line-height:0;overflow:hidden}
+.pm{position:relative;background:#0f0f11;display:block;width:100%;margin:0 0 clamp(16px,2.6vw,44px);padding:0;border:0;background:none;cursor:zoom-in;break-inside:avoid;line-height:0;overflow:hidden}
 .pm img{display:block;width:100%;height:auto;pointer-events:none;transition:opacity .6s,transform 1.4s cubic-bezier(.2,.7,.2,1)}
 .pm:hover img{opacity:.9;transform:scale(1.012)}
 /* movies */
@@ -103,7 +103,7 @@ dialog{border:0;padding:0;background:transparent;color:var(--ink);max-width:100v
 dialog::backdrop{background:rgba(0,0,0,.96)}
 #lb .box{width:min(94vw,1100px)}
 #lb .view{height:min(78dvh,880px);display:grid;place-items:center}
-#lb .view img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+#lb .view img{display:block;max-width:100%;max-height:min(78dvh,880px);width:auto;height:auto}
 .lbbar{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-top:14px}
 .count{font:400 11px/1 var(--sans);letter-spacing:.3em;color:var(--mute)}
 .enqlink{font:500 11px/1 var(--sans);letter-spacing:.26em;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--gold2);padding-bottom:6px}
@@ -128,7 +128,33 @@ dialog::backdrop{background:rgba(0,0,0,.96)}
  .btn{padding:18px 26px}
  #lb .box{width:96vw}
  #lb .view{height:min(70dvh,640px)}
+ #lb .view img{max-height:min(70dvh,640px)}
  .lbbar{flex-wrap:wrap}
  footer{flex-direction:column}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}.p3{animation:none;transform:rotateY(30deg)}}
+
+/* ---- V1.1 premium details ---- */
+:root{--pyr:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1100 640'%3E%3Cpolygon points='0,320 550,0 548,640' fill='%23b09850'/%3E%3Cpolygon points='550,0 1100,320 548,640' fill='%23d1b774'/%3E%3C/svg%3E")}
+::selection{background:var(--gold);color:#0b0b0c}
+html{scrollbar-width:thin;scrollbar-color:#2a2a2e var(--bg)}
+body{text-rendering:optimizeLegibility;font-feature-settings:"kern","liga"}
+.lead,.soon h3,.cap2,.about-body p{text-wrap:balance}
+/* small pyramid mark on photographs */
+.pm::after,#lb .view figure::after{content:"";position:absolute;right:14px;bottom:14px;width:17px;height:10px;background:var(--pyr) center/contain no-repeat;opacity:.8;filter:drop-shadow(0 0 3px rgba(0,0,0,.55));pointer-events:none}
+#lb .view figure{position:relative;margin:0;line-height:0;max-width:100%;display:flex}
+#lb .view figure::after{right:18px;bottom:18px;width:22px;height:13px}
+/* pyramid sitting on each section hairline */
+section::before{content:"";position:absolute;left:50%;top:-6px;width:56px;height:11px;transform:translateX(-50%);background:var(--bg) var(--pyr) center/17px 10px no-repeat;opacity:.9}
+/* scroll progress hairline */
+.top::after{content:"";position:absolute;left:0;bottom:-1px;width:100%;height:1px;background:var(--gold);transform-origin:0 50%;transform:scaleX(var(--p,0))}
+/* gentle reveals (only when JS is running) */
+.js .rv{opacity:0;transform:translateY(20px);transition:opacity 1.2s cubic-bezier(.2,.7,.2,1),transform 1.2s cubic-bezier(.2,.7,.2,1)}
+.js .rv.in{opacity:1;transform:none}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.js .duo{animation:fadeUp 2s cubic-bezier(.2,.7,.2,1) both}
+.js .hero h1{animation:fadeUp 2s .35s cubic-bezier(.2,.7,.2,1) both}
+dialog[open]{animation:fade .5s ease both}
+dialog[open]::backdrop{animation:fade .5s ease both}
+@media(prefers-reduced-motion:reduce){.js .rv{opacity:1;transform:none;transition:none}.js .duo,.js .hero h1,dialog[open],dialog[open]::backdrop{animation:none}}

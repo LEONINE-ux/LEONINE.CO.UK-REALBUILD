@@ -10,7 +10,7 @@ function show(i) {
   cur = (i + shots.length) % shots.length;
   const src = shots[cur].querySelector("img");
   const img = new Image(); img.src = src.currentSrc || src.src; img.alt = src.alt;
-  view.replaceChildren(img);
+  const fig = document.createElement("figure"); fig.appendChild(img); view.replaceChildren(fig);
   counter.textContent = pad(cur + 1) + " / " + pad(shots.length);
 }
 shots.forEach((b, i) => b.addEventListener("click", () => { show(i); lb.showModal(); }));
@@ -120,3 +120,27 @@ const HERO_CLIPS = [];
 /* ---------- Image protection (deterrent only) ---------- */
 document.addEventListener("contextmenu", e => { if (e.target.closest("#pgrid, #lb, .banner")) e.preventDefault(); });
 document.addEventListener("dragstart", e => { if (e.target.tagName === "IMG") e.preventDefault(); });
+
+/* ---------- Gentle reveals and scroll progress ---------- */
+(function () {
+  const els = document.querySelectorAll(".pm, section h2, .about-body p, .lead, .enq .sub, form.c .fld, form.c .types, form.c .btn, .screen, .cap2, .soon, .note");
+  els.forEach(e => e.classList.add("rv"));
+  if (!("IntersectionObserver" in window)) { els.forEach(e => e.classList.add("in")); return; }
+  const io = new IntersectionObserver(es => {
+    es.forEach((e, k) => {
+      if (!e.isIntersecting) return;
+      e.target.style.transitionDelay = (k % 3) * 110 + "ms";
+      e.target.classList.add("in"); io.unobserve(e.target);
+    });
+  }, { threshold: 0.08, rootMargin: "0px 0px -6% 0px" });
+  els.forEach(e => io.observe(e));
+})();
+(function () {
+  const top = document.querySelector(".top");
+  if (!top) return;
+  const set = () => {
+    const h = document.documentElement, max = h.scrollHeight - h.clientHeight;
+    top.style.setProperty("--p", max > 0 ? Math.min(1, h.scrollTop / max) : 0);
+  };
+  addEventListener("scroll", set, { passive: true }); addEventListener("resize", set); set();
+})();
