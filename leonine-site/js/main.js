@@ -144,3 +144,34 @@ document.addEventListener("dragstart", e => { if (e.target.tagName === "IMG") e.
   };
   addEventListener("scroll", set, { passive: true }); addEventListener("resize", set); set();
 })();
+
+/* ---------- Contact sheet toggle ---------- */
+(function () {
+  const grid = $("#pgrid"), g = $("#vtG"), s = $("#vtS");
+  if (!grid || !g || !s) return;
+  shots.forEach((b, i) => b.setAttribute("data-n", String(i + 1).padStart(2, "0")));
+  const set = sheet => {
+    grid.classList.toggle("sheet", sheet);
+    g.setAttribute("aria-pressed", String(!sheet)); s.setAttribute("aria-pressed", String(sheet));
+  };
+  g.onclick = () => set(false); s.onclick = () => set(true);
+})();
+
+/* ---------- F4s easter egg: type "f4s", or tap the version number three times ---------- */
+(function () {
+  const egg = document.createElement("div");
+  egg.className = "egg"; egg.setAttribute("aria-hidden", "true");
+  egg.innerHTML = "<span>F4s\u2122 superiority</span>";
+  document.body.appendChild(egg);
+  let t;
+  const fire = () => { egg.classList.add("on"); clearTimeout(t); t = setTimeout(() => egg.classList.remove("on"), 2600); };
+  let buf = "";
+  addEventListener("keydown", e => {
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable) return;
+    if (e.key.length !== 1) return;
+    buf = (buf + e.key.toLowerCase()).slice(-3);
+    if (buf === "f4s") { buf = ""; fire(); }
+  });
+  const ver = document.getElementById("ver");
+  if (ver) { let n = 0, r; ver.style.cursor = "default"; ver.addEventListener("click", () => { n++; clearTimeout(r); r = setTimeout(() => (n = 0), 1200); if (n >= 3) { n = 0; fire(); } }); }
+})();
