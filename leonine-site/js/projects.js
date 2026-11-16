@@ -30,9 +30,9 @@ window.PROJECTS = [
     ends: "31/12/2027",
     status: "current",
     brief: {
-      subject: "Architecture, specifically imposing and grand buildings.",
+      subject: "Architecture, specifically imposing and grand buildings in the brutalist style.",
       timeline: "Ends 31 December 2027.",
-      places: ["Padua, Italy", "Kyoto, Japan", "Warsaw, Poland", "London, England"],
+      places: ["Brutalist landmarks"],
       why: "This builds into my next field of inspiration. It develops my photography in a way that excites me and lets me experiment with a whole new world of photography."
     },
     photos: []                 // add photos here when you have them
