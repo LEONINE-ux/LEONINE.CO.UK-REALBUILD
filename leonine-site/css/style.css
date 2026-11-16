@@ -173,3 +173,10 @@ dialog[open]{animation:fade .45s ease both}
 .ptag{margin:14px 0 18px;font:italic 300 clamp(20px,2.4vw,30px)/1.3 var(--serif);color:var(--ink)}
 .pnote{padding:clamp(40px,8vw,110px) clamp(18px,6vw,110px) clamp(60px,10vw,140px)}
 .pnote p{max-width:620px;margin:0;font:italic 300 clamp(20px,2.2vw,28px)/1.55 var(--serif);color:var(--mute)}
+
+.about-grid{display:grid;grid-template-columns:minmax(0,660px) minmax(0,1fr);gap:clamp(28px,6vw,90px);align-items:start}
+.self{margin:0;position:sticky;top:96px}
+.self img{display:block;width:100%;height:auto;border:1px solid var(--line)}
+.interlude{padding:clamp(70px,12vw,170px) clamp(18px,6vw,110px);display:grid;justify-items:start}
+.interlude p{max-width:560px;margin:0;font:italic 300 clamp(20px,2.3vw,30px)/1.55 var(--serif);color:var(--mute);border-left:1px solid var(--gold);padding-left:clamp(16px,2vw,28px)}
+@media(max-width:900px){.about-grid{grid-template-columns:1fr}.self{position:static;order:-1}}

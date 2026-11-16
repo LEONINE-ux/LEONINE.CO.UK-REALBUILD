@@ -1,4 +1,4 @@
-# LEONINE (V3.1)
+# LEONINE (V3.2)
 
 Black "darkroom" photography site. Static, no build step. Open `index.html` to preview.
 
@@ -14,4 +14,4 @@ All photos are organised in `js/projects.js` (instructions at the top).
 - Contact form: Netlify Forms, form name `booking`.
 
 ## Changelog
-- V3.1 Projects system, movies removed, text cleared, video wall slot.
+- V3.2 Projects system, movies removed, text cleared, video wall slot.

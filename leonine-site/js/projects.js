@@ -23,6 +23,10 @@ window.PROJECTS = [
     era: "pre NOV26",          // shown as "Era: pre NOV26". Or use year / place instead.
     status: "current",
     note: "Selected from hundreds upon hundreds of frames, these are the ones that meant the most to me and began to define my style in photography, transforming what I shoot from basic family holiday photos into meaningful pieces of art.",
+    // A short text shown between photos. "after" = the frame number it comes after.
+    interludes: [
+      { after: 4, text: "I only shot this first section in France and Belgium. I only wanted to spend money on film while I was on holiday, so every frame in this collection comes from those trips." }
+    ],
     folder: "images/photos/",  // where this project's photos live
     photos: [
     { f: "01.jpg", w: 971, h: 1600 },
