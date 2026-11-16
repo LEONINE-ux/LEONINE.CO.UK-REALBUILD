@@ -24,15 +24,11 @@ window.PROJECTS = [
   {
     id: "arris-cant",
     title: "Arris Cant",
-    tagline: "Imposing and grand architecture",
-    state: "In progress",
-    ends: "31/12/2027",
     status: "current",
     brief: {
-      subject: "Architecture, specifically imposing and grand buildings in the brutalist style.",
-      timeline: "Ends 31 December 2027.",
-      places: ["Brutalist landmarks"],
-      why: "This builds into my next field of inspiration. It develops my photography in a way that excites me and lets me experiment with a whole new world of photography."
+      deadline: "31 December 2027",
+      progress: "Planning",      // change as it goes: Planning, Shooting, Editing, Finished
+      inspo: "Brutalist landmarks"
     },
     photos: []                 // add photos here when you have them
   },

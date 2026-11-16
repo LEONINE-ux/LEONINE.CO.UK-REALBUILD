@@ -21,8 +21,9 @@ function articleHTML(p) {
   const metaBits = [p.state, p.ends ? "Ends " + p.ends : "", p.era ? "Era: " + p.era : p.year, p.place, p.photos.length ? pad(p.photos.length, 2) + " frames" : ""].filter(Boolean).map(esc).join("</span><span>");
   const head = `<header class="phead"><span class="plabel">Project</span>${p.title ? `<h2 class="ptitle">${esc(p.title)}</h2>` : ""}${p.tagline ? `<p class="ptag">${esc(p.tagline)}</p>` : ""}<div class="pmeta"><span>${metaBits}</span></div></header>`;
   const br = p.brief ? (() => {
-    const row = (l, v) => v ? `<div class="brow"><dt>${esc(l)}</dt><dd>${v}</dd></div>` : "";
-    return `<section class="brief"><dl>${row("Subject", esc(p.brief.subject))}${row("Timeline", esc(p.brief.timeline))}${row("Places of interest", (p.brief.places || []).map(esc).join("<br>"))}${row("Why", esc(p.brief.why))}</dl></section>`;
+    const row = (l, v) => v ? `<div class="brow"><dt>${esc(l)}</dt><dd>${esc(v)}</dd></div>` : "";
+    const B = p.brief;
+    return `<section class="brief"><dl>${row("Deadline", B.deadline)}${row("Progress", B.progress)}${row("Inspo", B.inspo)}</dl></section>`;
   })() : "";
   const inter = {}; (p.interludes || []).forEach(x => { inter[x.after] = x.text; });
   const body = p.photos.map((ph, i) => {
