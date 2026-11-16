@@ -1,28 +1,17 @@
-# LEONINE (V1.2)
+# LEONINE (V3.1)
 
-Static site: no build step. Open `index.html` to preview.
+Black "darkroom" photography site. Static, no build step. Open `index.html` to preview.
 
-## Structure
-- `index.html` page content
-- `css/style.css` styling
-- `js/main.js` photo viewer, film player, enquiry form
-- `images/photos/` gallery photos (01.jpg, 02.jpg ...)
-- `images/banner.jpg` top banner
+## Projects (the main thing you will edit)
+All photos are organised in `js/projects.js` (instructions at the top).
+1. Put a project's photos in their own folder, e.g. `images/lisbon/`.
+2. Add a project block in `js/projects.js`. `status: "current"` is shown first, `"archive"` projects are listed under Archive automatically.
+3. Commit.
 
-## Add a photo
-1. Save it in `images/photos/` (about 2000px on the long edge, JPEG).
-2. Copy one `<button class="ph pm">...</button>` line in `index.html` (inside `id="pgrid"`), change the file name, width and height.
-
-## Add the film
-Put the file in a `video/` folder, then in `js/main.js` set `const CLIPS = ["video/film.mp4"];`
-
-## Booking form
-Uses Netlify Forms. After the first deploy: Netlify > Forms > booking > Settings & usage > Form notifications > add an email notification.
-
-## Orders
-There is no shop. Prints, music and bookings are requested through the Enquire form and handled by email.
+## Other
+- Landing video wall: set `HERO_CLIPS` in `js/main.js` (silent clips, put files in `video/`).
+- About: in `index.html` remove `hidden` from the About section, write the text, and remove the same `!$("#about").hidden` check is automatic.
+- Contact form: Netlify Forms, form name `booking`.
 
 ## Changelog
-- V1.0 First public version: photo gallery, movies section (clips to come), private enquiry form, legal page, no shop.
-- V1.1 Small pyramid mark on photographs, pyramid section dividers, gentle reveals, scroll progress line.
-- V1.2 Contact sheet view, branded 404 page, F4s easter egg, Instagram link.
+- V3.1 Projects system, movies removed, text cleared, video wall slot.

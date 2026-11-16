@@ -1,177 +1,197 @@
 "use strict";
 const $ = s => document.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const PROJECTS = (window.PROJECTS || []).filter(p => p && p.photos && p.photos.length);
+const pad = (n, l = 3) => String(n).padStart(l, "0");
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-/* ---------- Photo viewer ---------- */
+const exhibit = $("#exhibit"), cf = $("#cf"), cfn = $("#cfn"), cft = $("#cft");
+let proj = null, frames = [], shots = [], litIO = null, midIO = null;
+
+/* ---------- Build a project onto the page ---------- */
+function photoOf(p, ph) {
+  const o = typeof ph === "string" ? { f: ph } : ph;
+  return { src: (p.folder || "") + o.f, w: o.w, h: o.h };
+}
+function mount(p, scroll) {
+  proj = p;
+  const n = PROJECTS.indexOf(p) + 1;
+  const meta = [p.era ? "Era: " + p.era : p.year, p.place, pad(p.photos.length, 2) + " frames"].filter(Boolean).map(esc).join("</span><span>");
+  const head = `<header class="phead"><div class="pinfo"><span class="pnum">${pad(n, 2)}</span>${p.title ? `<h2 class="ptitle">${esc(p.title)}</h2>` : ""}</div>${p.tagline ? `<p class="ptag">${esc(p.tagline)}</p>` : ""}<div class="pinfo pmeta"><span>${meta}</span></div></header>`;
+  const body = p.photos.map((ph, i) => {
+    const o = photoOf(p, ph), k = i + 1, side = k % 2 ? "l" : "r";
+    const dims = o.w && o.h ? ` width="${o.w}" height="${o.h}"` : "";
+    return `<section class="frame ${side}" id="f${pad(k, 2)}" data-i="${k}"><figure><button class="ph" data-n="${pad(k, 2)}" aria-label="View frame ${k} larger"><img src="${esc(o.src)}"${dims} alt="Black and white 35mm film photograph, frame ${k}" loading="${k <= 2 ? "eager" : "lazy"}" decoding="async"></button><figcaption><span>No. ${pad(k, 2)}</span></figcaption></figure></section>`;
+  }).join("");
+  const note = p.note ? `<section class="pnote"><p>${esc(p.note)}</p></section>` : "";
+  exhibit.innerHTML = `<article id="work" aria-label="${esc(p.title || "Project " + n)}">${head}${body}${note}</article>`;
+  frames = $$("#exhibit .frame"); shots = $$("#exhibit .ph");
+  shots.forEach((b, i) => b.addEventListener("click", () => { showLB(i); lb.showModal(); }));
+  cft.textContent = pad(frames.length);
+  observe(); buildIndex(); markArchive();
+  if (scroll) exhibit.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+}
+
+/* ---------- Lights come up, counter ---------- */
+function observe() {
+  if (litIO) litIO.disconnect(); if (midIO) midIO.disconnect();
+  if (!("IntersectionObserver" in window)) { frames.forEach(f => f.classList.add("lit")); return; }
+  litIO = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("lit"); litIO.unobserve(e.target); } }), { threshold: 0.15 });
+  midIO = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) cfn.textContent = pad(e.target.dataset.i); }), { rootMargin: "-45% 0px -45% 0px" });
+  frames.forEach(f => { litIO.observe(f); midIO.observe(f); });
+}
+function counterVisibility() {
+  if (!frames.length) return;
+  const a = frames[0].getBoundingClientRect().top, b = frames[frames.length - 1].getBoundingClientRect().bottom;
+  cf.classList.toggle("on", a < innerHeight * 0.5 && b > innerHeight * 0.5);
+}
+(function () {
+  const bar = $(".prog");
+  const set = () => { const h = document.documentElement, m = h.scrollHeight - h.clientHeight; bar.style.setProperty("--p", m > 0 ? Math.min(1, h.scrollTop / m) : 0); counterVisibility(); };
+  addEventListener("scroll", set, { passive: true }); addEventListener("resize", set); set();
+})();
+
+/* ---------- Archive ---------- */
+function buildArchive() {
+  if (PROJECTS.length < 2) return;
+  $("#archive").hidden = false; $("#navArchive").hidden = false;
+  $("#arows").innerHTML = PROJECTS.map((p, i) => `<button class="arow" data-project="${esc(p.id)}"><span class="n">${pad(i + 1, 2)}</span><span class="t">${esc(p.title || "Untitled")}</span><span class="y">${esc(p.year || "")}</span><span class="c">${pad(p.photos.length, 2)}</span></button>`).join("");
+}
+function markArchive() { $$(".arow").forEach(r => r.classList.toggle("on", proj && r.dataset.project === proj.id)); }
+function openProject(id, scroll) {
+  const p = PROJECTS.find(x => x.id === id); if (!p) return false;
+  mount(p, scroll);
+  try { history.replaceState(null, "", p.status === "current" ? location.pathname : "#p/" + p.id); } catch (_) {}
+  return true;
+}
+$("#arows").addEventListener("click", e => { const r = e.target.closest("[data-project]"); if (r) openProject(r.dataset.project, true); });
+
+/* ---------- Full-size viewer ---------- */
 const lb = $("#lb"), view = $("#lbview"), counter = $("#lbcount");
-const shots = [...document.querySelectorAll("#pgrid .ph")];
 let cur = 0;
-const pad = n => String(n).padStart(3, "0");
-function show(i) {
+function showLB(i) {
   cur = (i + shots.length) % shots.length;
   const src = shots[cur].querySelector("img");
   const img = new Image(); img.src = src.currentSrc || src.src; img.alt = src.alt;
   const fig = document.createElement("figure"); fig.appendChild(img); view.replaceChildren(fig);
   counter.textContent = pad(cur + 1) + " / " + pad(shots.length);
 }
-shots.forEach((b, i) => b.addEventListener("click", () => { show(i); lb.showModal(); }));
 $("#lbx").onclick = () => lb.close();
-$("#lbp").onclick = () => show(cur - 1);
-$("#lbn").onclick = () => show(cur + 1);
+$("#lbp").onclick = () => showLB(cur - 1);
+$("#lbn").onclick = () => showLB(cur + 1);
 lb.addEventListener("click", e => { if (e.target === lb) lb.close(); });
-lb.addEventListener("keydown", e => {
-  if (e.key === "ArrowLeft") show(cur - 1);
-  if (e.key === "ArrowRight") show(cur + 1);
-});
+lb.addEventListener("close", () => { if (frames[cur]) frames[cur].scrollIntoView({ block: "center" }); });
+lb.addEventListener("keydown", e => { if (e.key === "ArrowLeft") showLB(cur - 1); if (e.key === "ArrowRight") showLB(cur + 1); });
 let sx = null;
 view.addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, { passive: true });
-view.addEventListener("touchend", e => {
-  if (sx === null) return;
-  const dx = e.changedTouches[0].clientX - sx;
-  if (Math.abs(dx) > 50) show(cur + (dx < 0 ? 1 : -1));
-  sx = null;
-});
+view.addEventListener("touchend", e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 50) showLB(cur + (dx < 0 ? 1 : -1)); sx = null; });
 
-/* ---------- Enquiry form ---------- */
-const form = $("#enquiry");
-const HINTS = {
-  "A print": "Size, paper and finish, framed or unframed, and where it will hang. Tell me what you have in mind.",
-  "Music or a CD": "What you would like: a CD, a digital copy, something custom. How many, and any details.",
-  "A shoot or event": "What the event is, who it is for, how many people, and what you would like from me.",
-  "Something else": "Tell me what you have in mind."
-};
-function updateType() {
-  const v = form.querySelector('input[name="request_type"]:checked').value;
-  form.querySelectorAll(".fld[data-for]").forEach(f => {
-    const on = f.dataset.for === v;
-    f.hidden = !on;
-    f.querySelectorAll("input").forEach(i => { i.disabled = !on; });
-  });
-  $("#rt").placeholder = HINTS[v];
+/* ---------- Index ---------- */
+const idx = $("#idx");
+function buildIndex() {
+  const links = [`<a href="#exhibit" data-go="exhibit">Photographs</a>`];
+  if (PROJECTS.length > 1) links.push(`<a href="#archive" data-go="archive">Archive</a>`);
+  links.push(`<a href="#music" data-go="music">Music</a>`);
+  if (!$("#about").hidden) links.push(`<a href="#about" data-go="about">About</a>`);
+  links.push(`<a href="#contact" data-go="contact">Contact</a>`);
+  $("#idxnav").innerHTML = links.join("");
+  $("#idxgrid").innerHTML = proj.photos.map((ph, i) => { const o = photoOf(proj, ph); return `<button class="th" data-frame="${i + 1}" aria-label="Go to frame ${i + 1}"><img src="${esc(o.src)}" alt="" decoding="async"><span>${pad(i + 1, 2)}</span></button>`; }).join("");
 }
-function setType(v) {
-  const r = [...form.querySelectorAll('input[name="request_type"]')].find(i => i.value === v);
-  if (r) { r.checked = true; updateType(); }
-}
-form.addEventListener("change", e => { if (e.target.name === "request_type") updateType(); });
-updateType();
-
-$("#lbenq").addEventListener("click", e => {
+$("#idxbtn").onclick = () => idx.showModal();
+$("#idxx").onclick = () => idx.close();
+idx.addEventListener("click", e => {
+  if (e.target === idx) { idx.close(); return; }
+  const go = e.target.closest("[data-go]"), fr = e.target.closest("[data-frame]");
+  if (!go && !fr) return;
   e.preventDefault();
-  lb.close(); setType("A print");
-  $("#rf").value = "Frame " + (cur + 1) + " in the gallery";
-  $("#book").scrollIntoView({ behavior: "smooth" });
-  setTimeout(() => $("#rt").focus({ preventScroll: true }), 700);
+  const target = go ? document.getElementById(go.dataset.go) : document.getElementById("f" + pad(fr.dataset.frame, 2));
+  idx.close();
+  if (target) setTimeout(() => target.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: fr ? "center" : "start" }), 60);
 });
 
+/* ---------- Keys: J / K or left / right arrows step between frames ---------- */
+addEventListener("keydown", e => {
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable || document.querySelector("dialog[open]") || !frames.length) return;
+  const next = e.key === "j" || e.key === "ArrowRight", prev = e.key === "k" || e.key === "ArrowLeft";
+  if (!next && !prev) return;
+  const mid = innerHeight / 2;
+  let i = frames.findIndex(f => { const r = f.getBoundingClientRect(); return r.top <= mid && r.bottom > mid; });
+  if (i < 0) i = frames[0].getBoundingClientRect().top > mid ? -1 : frames.length - 1;
+  const t = frames[Math.max(0, Math.min(frames.length - 1, i + (next ? 1 : -1)))];
+  e.preventDefault(); t.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+});
+
+/* ---------- Contact form (Netlify Forms) ---------- */
+const form = $("#enquiry");
 form.addEventListener("submit", async e => {
   e.preventDefault();
   const out = form.querySelector("output"), btn = form.querySelector("button[type=submit]");
   btn.disabled = true; out.textContent = "Sending...";
   try {
-    const r = await fetch("/", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams(new FormData(form)).toString(),
-    });
+    const r = await fetch("/", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(new FormData(form)).toString() });
     if (!r.ok) throw new Error(r.status);
-    form.reset(); updateType();
-    out.textContent = "Thank you. I\u2019ll reply by email shortly.";
+    form.reset(); out.textContent = "Sent.";
   } catch (_) {
-    out.innerHTML = 'Something went wrong. Please email <a href="mailto:leornardo2007@gmail.com">leornardo2007@gmail.com</a> instead.';
+    out.innerHTML = 'Something went wrong. Email <a href="mailto:leornardo2007@gmail.com">leornardo2007@gmail.com</a> instead.';
   }
   btn.disabled = false;
 });
 
-/* ---------- Movies section ----------
-   Add the path of your clip (or one stitched file) below, e.g. ["video/film.mp4"] */
-const CLIPS = [];
-(function () {
-  const v = $("#cine");
-  if (!v || !CLIPS.length) return;
-  let i = 0;
-  $("#cineEmpty").hidden = true; $("#cineCtl").hidden = false;
-  v.src = CLIPS[0]; v.loop = CLIPS.length === 1;
-  v.addEventListener("ended", () => { i = (i + 1) % CLIPS.length; v.src = CLIPS[i]; v.play().catch(() => {}); });
-  const pb = $("#cinePlay"), sb = $("#cineSnd");
-  pb.onclick = () => (v.paused ? v.play() : v.pause());
-  v.addEventListener("play", () => (pb.textContent = "Pause"));
-  v.addEventListener("pause", () => (pb.textContent = "Play"));
-  sb.onclick = () => { v.muted = !v.muted; sb.textContent = v.muted ? "Sound on" : "Sound off"; };
-  if (!matchMedia("(prefers-reduced-motion: reduce)").matches && "IntersectionObserver" in window) {
-    new IntersectionObserver(es => es.forEach(e => (e.isIntersecting ? v.play().catch(() => {}) : v.pause())), { threshold: 0.4 }).observe(v);
-  } else { pb.textContent = "Play"; }
-})();
-
-/* ---------- Landing background clips (silent) ----------
-   Add paths such as ["video/hero-1.mp4"]. Several clips play one after another. */
+/* ---------- Landing video wall (silent, behind the logo) ----------
+   Add the paths of your clips below, e.g. ["video/wall-1.mp4", "video/wall-2.mp4"].
+   They play one after another and loop. Leave the list empty to show plain concrete. */
 const HERO_CLIPS = [];
 (function () {
-  const v = document.querySelector(".hero .bgv");
-  if (!v || !HERO_CLIPS.length) return;
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const v = $(".intro .bgv");
+  if (!v || !HERO_CLIPS.length || reduce) return;
   if (navigator.connection && navigator.connection.saveData) return;
   let i = 0;
   v.muted = true; v.loop = HERO_CLIPS.length === 1; v.src = HERO_CLIPS[0];
-  v.addEventListener("canplay", () => v.closest(".hero").classList.add("has-video"), { once: true });
+  v.addEventListener("canplay", () => v.closest(".intro").classList.add("has-video"), { once: true });
   v.addEventListener("ended", () => { i = (i + 1) % HERO_CLIPS.length; v.src = HERO_CLIPS[i]; v.play().catch(() => {}); });
   v.play().catch(() => {});
 })();
 
 /* ---------- Image protection (deterrent only) ---------- */
-document.addEventListener("contextmenu", e => { if (e.target.closest("#pgrid, #lb, .banner")) e.preventDefault(); });
+document.addEventListener("contextmenu", e => { if (e.target.closest(".frame, #lb, #idx")) e.preventDefault(); });
 document.addEventListener("dragstart", e => { if (e.target.tagName === "IMG") e.preventDefault(); });
-
-/* ---------- Gentle reveals and scroll progress ---------- */
-(function () {
-  const els = document.querySelectorAll(".pm, section h2, .about-body p, .lead, .enq .sub, form.c .fld, form.c .types, form.c .btn, .screen, .cap2, .soon, .note");
-  els.forEach(e => e.classList.add("rv"));
-  if (!("IntersectionObserver" in window)) { els.forEach(e => e.classList.add("in")); return; }
-  const io = new IntersectionObserver(es => {
-    es.forEach((e, k) => {
-      if (!e.isIntersecting) return;
-      e.target.style.transitionDelay = (k % 3) * 110 + "ms";
-      e.target.classList.add("in"); io.unobserve(e.target);
-    });
-  }, { threshold: 0.08, rootMargin: "0px 0px -6% 0px" });
-  els.forEach(e => io.observe(e));
-})();
-(function () {
-  const top = document.querySelector(".top");
-  if (!top) return;
-  const set = () => {
-    const h = document.documentElement, max = h.scrollHeight - h.clientHeight;
-    top.style.setProperty("--p", max > 0 ? Math.min(1, h.scrollTop / max) : 0);
-  };
-  addEventListener("scroll", set, { passive: true }); addEventListener("resize", set); set();
-})();
-
-/* ---------- Contact sheet toggle ---------- */
-(function () {
-  const grid = $("#pgrid"), g = $("#vtG"), s = $("#vtS");
-  if (!grid || !g || !s) return;
-  shots.forEach((b, i) => b.setAttribute("data-n", String(i + 1).padStart(2, "0")));
-  const set = sheet => {
-    grid.classList.toggle("sheet", sheet);
-    g.setAttribute("aria-pressed", String(!sheet)); s.setAttribute("aria-pressed", String(sheet));
-  };
-  g.onclick = () => set(false); s.onclick = () => set(true);
-})();
 
 /* ---------- F4s easter egg: type "f4s", or tap the version number three times ---------- */
 (function () {
   const egg = document.createElement("div");
   egg.className = "egg"; egg.setAttribute("aria-hidden", "true");
-  egg.innerHTML = "<span>F4s\u2122 superiority</span>";
+  egg.innerHTML = "<span>F4s™ superiority</span>";
   document.body.appendChild(egg);
   let t;
   const fire = () => { egg.classList.add("on"); clearTimeout(t); t = setTimeout(() => egg.classList.remove("on"), 2600); };
   let buf = "";
   addEventListener("keydown", e => {
-    if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable) return;
-    if (e.key.length !== 1) return;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable || e.key.length !== 1) return;
     buf = (buf + e.key.toLowerCase()).slice(-3);
     if (buf === "f4s") { buf = ""; fire(); }
   });
   const ver = document.getElementById("ver");
-  if (ver) { let n = 0, r; ver.style.cursor = "default"; ver.addEventListener("click", () => { n++; clearTimeout(r); r = setTimeout(() => (n = 0), 1200); if (n >= 3) { n = 0; fire(); } }); }
+  if (ver) { let n = 0, r; ver.addEventListener("click", () => { n++; clearTimeout(r); r = setTimeout(() => (n = 0), 1200); if (n >= 3) { n = 0; fire(); } }); }
+})();
+
+/* ---------- Start ---------- */
+if (PROJECTS.length) {
+  buildArchive();
+  const m = location.hash.match(/^#p\/(.+)$/);
+  const start = (m && PROJECTS.find(p => p.id === decodeURIComponent(m[1]))) || PROJECTS.find(p => p.status === "current") || PROJECTS[0];
+  mount(start, !!m);
+}
+
+/* ---------- Safelight glow follows the cursor ---------- */
+(function () {
+  if (reduce || matchMedia("(hover: none)").matches) return;
+  const root = document.documentElement; let raf = 0, x = 0, y = 0;
+  addEventListener("pointermove", e => { x = e.clientX; y = e.clientY; if (!raf) raf = requestAnimationFrame(() => { root.style.setProperty("--mx", x + "px"); root.style.setProperty("--my", y + "px"); raf = 0; }); }, { passive: true });
+})();
+/* ---------- Contact placeholder hints ---------- */
+(function () {
+  const H = { "A collaboration": "Tell me about the project.", "Press or a feature": "Where it is for, and what you need.", "A booking": "What it is, when and where.", "An event": "What the event is, when and where.", "Feedback": "What you noticed, and what would help.", "Just saying hi": "Say whatever you like." };
+  const set = () => { const c = form.querySelector('input[name="topic"]:checked'); if (c) $("#rt").placeholder = H[c.value] || ""; };
+  form.addEventListener("change", e => { if (e.target.name === "topic") set(); }); set();
 })();
