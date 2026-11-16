@@ -23,7 +23,6 @@
 window.PROJECTS = [
   {
     id: "arris-cant",
-    num: 1,                    // shown as 01
     title: "Arris Cant",
     tagline: "Imposing and grand architecture",
     state: "In progress",
@@ -39,7 +38,6 @@ window.PROJECTS = [
   },
   {
     id: "nascence",            // used in the web address, no spaces
-    num: 0,                    // shown as 00 (optional, otherwise numbered by order)
     title: "Nascence",
     tagline: "Finding my style",
     era: "pre NOV26",          // shown as "Era: pre NOV26". Or use year / place instead.

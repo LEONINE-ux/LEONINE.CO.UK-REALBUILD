@@ -17,9 +17,9 @@ function photoOf(p, ph) {
 }
 const numOf = p => pad(p.num != null ? p.num : PROJECTS.indexOf(p) + 1, 2);
 function articleHTML(p) {
-  const n = numOf(p);
+  const n = p.title || "";
   const metaBits = [p.state, p.ends ? "Ends " + p.ends : "", p.era ? "Era: " + p.era : p.year, p.place, p.photos.length ? pad(p.photos.length, 2) + " frames" : ""].filter(Boolean).map(esc).join("</span><span>");
-  const head = `<header class="phead"><div class="pinfo"><span class="pnum">${n}</span>${p.title ? `<h2 class="ptitle">${esc(p.title)}</h2>` : ""}</div>${p.tagline ? `<p class="ptag">${esc(p.tagline)}</p>` : ""}<div class="pinfo pmeta"><span>${metaBits}</span></div></header>`;
+  const head = `<header class="phead"><span class="plabel">Project</span>${p.title ? `<h2 class="ptitle">${esc(p.title)}</h2>` : ""}${p.tagline ? `<p class="ptag">${esc(p.tagline)}</p>` : ""}<div class="pmeta"><span>${metaBits}</span></div></header>`;
   const br = p.brief ? (() => {
     const row = (l, v) => v ? `<div class="brow"><dt>${esc(l)}</dt><dd>${v}</dd></div>` : "";
     return `<section class="brief"><dl>${row("Subject", esc(p.brief.subject))}${row("Timeline", esc(p.brief.timeline))}${row("Places of interest", (p.brief.places || []).map(esc).join("<br>"))}${row("Why", esc(p.brief.why))}</dl></section>`;
@@ -37,7 +37,7 @@ function mount(p, scroll) {
   let shown = p, html = articleHTML(p);
   if (!p.photos.length) {
     const f = SHOWN.find(x => x.status !== "current") || SHOWN[0];
-    if (f) { shown = f; html += articleHTML(f); }
+    if (f) { shown = f; html = articleHTML(f) + html; }
   }
   proj = shown;
   exhibit.innerHTML = html;
@@ -71,7 +71,7 @@ function counterVisibility() {
 function buildArchive() {
   if (SHOWN.length < 2) return;
   $("#archive").hidden = false; $("#navArchive").hidden = false;
-  $("#arows").innerHTML = SHOWN.map(p => `<button class="arow" data-project="${esc(p.id)}"><span class="n">${numOf(p)}</span><span class="t">${esc(p.title || "Untitled")}</span><span class="y">${esc(p.year || "")}</span><span class="c">${pad(p.photos.length, 2)}</span></button>`).join("");
+  $("#arows").innerHTML = SHOWN.map(p => `<button class="arow" data-project="${esc(p.id)}"><span class="n">Project</span><span class="t">${esc(p.title || "Untitled")}</span><span class="y">${esc(p.year || "")}</span><span class="c">${pad(p.photos.length, 2)}</span></button>`).join("");
 }
 function markArchive() { $$(".arow").forEach(r => r.classList.toggle("on", proj && r.dataset.project === proj.id)); }
 function openProject(id, scroll) {
