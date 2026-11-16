@@ -188,3 +188,5 @@ dialog[open]{animation:fade .45s ease both}
 .side .slabel{display:block;margin-bottom:18px;font:400 11px/1 var(--mono);letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
 .side p{margin:0;font:italic 300 clamp(20px,2.1vw,28px)/1.5 var(--serif);color:var(--ink);border-left:1px solid var(--gold);padding-left:clamp(16px,2vw,26px)}
 @media(max-width:900px){.frame.has-note,.frame.has-note.r{grid-template-columns:1fr;row-gap:24px}.frame.has-note.r .side{order:2;justify-self:start}.side{max-width:none}}
+
+.words p.sign{margin-top:.4em;font-size:clamp(18px,1.9vw,24px);color:var(--mute)}
