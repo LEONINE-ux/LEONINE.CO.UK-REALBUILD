@@ -21,9 +21,9 @@ function mount(p, scroll) {
   const head = `<header class="phead"><div class="pinfo"><span class="pnum">${pad(n, 2)}</span>${p.title ? `<h2 class="ptitle">${esc(p.title)}</h2>` : ""}</div>${p.tagline ? `<p class="ptag">${esc(p.tagline)}</p>` : ""}<div class="pinfo pmeta"><span>${meta}</span></div></header>`;
   const inter = {}; (p.interludes || []).forEach(x => { inter[x.after] = x.text; });
   const body = p.photos.map((ph, i) => {
-    const o = photoOf(p, ph), k = i + 1, side = k % 2 ? "l" : "r";
+    const o = photoOf(p, ph), k = i + 1, side = k % 2 ? "l" : "r", nt = ph && ph.note ? ph.note : "";
     const dims = o.w && o.h ? ` width="${o.w}" height="${o.h}"` : "";
-    return `<section class="frame ${side}" id="f${pad(k, 2)}" data-i="${k}"><figure><button class="ph" data-n="${pad(k, 2)}" aria-label="View frame ${k} larger"><img src="${esc(o.src)}"${dims} alt="Black and white 35mm film photograph, frame ${k}" loading="${k <= 2 ? "eager" : "lazy"}" decoding="async"></button><figcaption><span>No. ${pad(k, 2)}</span></figcaption></figure></section>${inter[k] ? `<section class="interlude"><p>${esc(inter[k])}</p></section>` : ""}`;
+    return `<section class="frame ${side}${nt ? " has-note" : ""}" id="f${pad(k, 2)}" data-i="${k}"><figure><button class="ph" data-n="${pad(k, 2)}" aria-label="View frame ${k} larger"><img src="${esc(o.src)}"${dims} alt="Black and white 35mm film photograph, frame ${k}" loading="${k <= 2 ? "eager" : "lazy"}" decoding="async"></button><figcaption><span>No. ${pad(k, 2)}</span></figcaption></figure>${nt ? `<aside class="side">${ph.label ? `<span class="slabel">${esc(ph.label)}</span>` : ""}<p>${esc(nt)}</p></aside>` : ""}</section>${inter[k] ? `<section class="interlude"><p>${esc(inter[k])}</p></section>` : ""}`;
   }).join("");
   const note = p.note ? `<section class="pnote"><p>${esc(p.note)}</p></section>` : "";
   exhibit.innerHTML = `<article id="work" aria-label="${esc(p.title || "Project " + n)}">${head}${body}${note}</article>`;

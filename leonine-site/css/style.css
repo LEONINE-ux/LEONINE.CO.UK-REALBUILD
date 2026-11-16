@@ -180,3 +180,11 @@ dialog[open]{animation:fade .45s ease both}
 .interlude{padding:clamp(70px,12vw,170px) clamp(18px,6vw,110px);display:grid;justify-items:start}
 .interlude p{max-width:560px;margin:0;font:italic 300 clamp(20px,2.3vw,30px)/1.55 var(--serif);color:var(--mute);border-left:1px solid var(--gold);padding-left:clamp(16px,2vw,28px)}
 @media(max-width:900px){.about-grid{grid-template-columns:1fr}.self{position:static;order:-1}}
+
+.frame.has-note{grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:clamp(28px,6vw,100px)}
+.frame.has-note.r{grid-template-columns:minmax(0,1fr) auto}
+.frame.has-note.r figure{order:2}.frame.has-note.r .side{order:1;justify-self:end}
+.side{max-width:380px}
+.side .slabel{display:block;margin-bottom:18px;font:400 11px/1 var(--mono);letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
+.side p{margin:0;font:italic 300 clamp(20px,2.1vw,28px)/1.5 var(--serif);color:var(--ink);border-left:1px solid var(--gold);padding-left:clamp(16px,2vw,26px)}
+@media(max-width:900px){.frame.has-note,.frame.has-note.r{grid-template-columns:1fr;row-gap:24px}.frame.has-note.r .side{order:2;justify-self:start}.side{max-width:none}}
