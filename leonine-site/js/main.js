@@ -2,7 +2,8 @@
 const $ = s => document.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const PROJECTS = (window.PROJECTS || []).filter(p => p && p.photos && p.photos.length);
+const PROJECTS = (window.PROJECTS || []).filter(p => p && p.id).map(p => Object.assign({ photos: [] }, p));
+const SHOWN = PROJECTS.filter(p => p.photos.length);
 const pad = (n, l = 3) => String(n).padStart(l, "0");
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
@@ -14,11 +15,15 @@ function photoOf(p, ph) {
   const o = typeof ph === "string" ? { f: ph } : ph;
   return { src: (p.folder || "") + o.f, w: o.w, h: o.h };
 }
-function mount(p, scroll) {
-  proj = p;
-  const n = PROJECTS.indexOf(p) + 1;
-  const meta = [p.era ? "Era: " + p.era : p.year, p.place, pad(p.photos.length, 2) + " frames"].filter(Boolean).map(esc).join("</span><span>");
-  const head = `<header class="phead"><div class="pinfo"><span class="pnum">${pad(n, 2)}</span>${p.title ? `<h2 class="ptitle">${esc(p.title)}</h2>` : ""}</div>${p.tagline ? `<p class="ptag">${esc(p.tagline)}</p>` : ""}<div class="pinfo pmeta"><span>${meta}</span></div></header>`;
+const numOf = p => pad(p.num != null ? p.num : PROJECTS.indexOf(p) + 1, 2);
+function articleHTML(p) {
+  const n = numOf(p);
+  const metaBits = [p.state, p.ends ? "Ends " + p.ends : "", p.era ? "Era: " + p.era : p.year, p.place, p.photos.length ? pad(p.photos.length, 2) + " frames" : ""].filter(Boolean).map(esc).join("</span><span>");
+  const head = `<header class="phead"><div class="pinfo"><span class="pnum">${n}</span>${p.title ? `<h2 class="ptitle">${esc(p.title)}</h2>` : ""}</div>${p.tagline ? `<p class="ptag">${esc(p.tagline)}</p>` : ""}<div class="pinfo pmeta"><span>${metaBits}</span></div></header>`;
+  const br = p.brief ? (() => {
+    const row = (l, v) => v ? `<div class="brow"><dt>${esc(l)}</dt><dd>${v}</dd></div>` : "";
+    return `<section class="brief"><dl>${row("Subject", esc(p.brief.subject))}${row("Timeline", esc(p.brief.timeline))}${row("Places of interest", (p.brief.places || []).map(esc).join("<br>"))}${row("Why", esc(p.brief.why))}</dl></section>`;
+  })() : "";
   const inter = {}; (p.interludes || []).forEach(x => { inter[x.after] = x.text; });
   const body = p.photos.map((ph, i) => {
     const o = photoOf(p, ph), k = i + 1, side = k % 2 ? "l" : "r", nt = ph && ph.note ? ph.note : "";
@@ -26,7 +31,16 @@ function mount(p, scroll) {
     return `<section class="frame ${side}${nt ? " has-note" : ""}" id="f${pad(k, 2)}" data-i="${k}"><figure><button class="ph" data-n="${pad(k, 2)}" aria-label="View frame ${k} larger"><img src="${esc(o.src)}"${dims} alt="Black and white 35mm film photograph, frame ${k}" loading="${k <= 2 ? "eager" : "lazy"}" decoding="async"></button><figcaption><span>No. ${pad(k, 2)}</span></figcaption></figure>${nt ? `<aside class="side">${ph.label ? `<span class="slabel">${esc(ph.label)}</span>` : ""}<p>${esc(nt)}</p></aside>` : ""}</section>${inter[k] ? `<section class="interlude"><p>${esc(inter[k])}</p></section>` : ""}`;
   }).join("");
   const note = p.note ? `<section class="pnote"><p>${esc(p.note)}</p></section>` : "";
-  exhibit.innerHTML = `<article id="work" aria-label="${esc(p.title || "Project " + n)}">${head}${body}${note}</article>`;
+  return `<article class="proj" aria-label="${esc(p.title || "Project " + n)}">${head}${br}${body}${note}</article>`;
+}
+function mount(p, scroll) {
+  let shown = p, html = articleHTML(p);
+  if (!p.photos.length) {
+    const f = SHOWN.find(x => x.status !== "current") || SHOWN[0];
+    if (f) { shown = f; html += articleHTML(f); }
+  }
+  proj = shown;
+  exhibit.innerHTML = html;
   frames = $$("#exhibit .frame"); shots = $$("#exhibit .ph");
   shots.forEach((b, i) => b.addEventListener("click", () => { showLB(i); lb.showModal(); }));
   cft.textContent = pad(frames.length);
@@ -55,9 +69,9 @@ function counterVisibility() {
 
 /* ---------- Archive ---------- */
 function buildArchive() {
-  if (PROJECTS.length < 2) return;
+  if (SHOWN.length < 2) return;
   $("#archive").hidden = false; $("#navArchive").hidden = false;
-  $("#arows").innerHTML = PROJECTS.map((p, i) => `<button class="arow" data-project="${esc(p.id)}"><span class="n">${pad(i + 1, 2)}</span><span class="t">${esc(p.title || "Untitled")}</span><span class="y">${esc(p.year || "")}</span><span class="c">${pad(p.photos.length, 2)}</span></button>`).join("");
+  $("#arows").innerHTML = SHOWN.map(p => `<button class="arow" data-project="${esc(p.id)}"><span class="n">${numOf(p)}</span><span class="t">${esc(p.title || "Untitled")}</span><span class="y">${esc(p.year || "")}</span><span class="c">${pad(p.photos.length, 2)}</span></button>`).join("");
 }
 function markArchive() { $$(".arow").forEach(r => r.classList.toggle("on", proj && r.dataset.project === proj.id)); }
 function openProject(id, scroll) {
@@ -92,7 +106,7 @@ view.addEventListener("touchend", e => { if (sx === null) return; const dx = e.c
 const idx = $("#idx");
 function buildIndex() {
   const links = [`<a href="#exhibit" data-go="exhibit">Photographs</a>`];
-  if (PROJECTS.length > 1) links.push(`<a href="#archive" data-go="archive">Archive</a>`);
+  if (SHOWN.length > 1) links.push(`<a href="#archive" data-go="archive">Archive</a>`);
   links.push(`<a href="#music" data-go="music">Music</a>`);
   if (!$("#about").hidden) links.push(`<a href="#about" data-go="about">About</a>`);
   links.push(`<a href="#contact" data-go="contact">Contact</a>`);

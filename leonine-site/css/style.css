@@ -194,3 +194,11 @@ dialog[open]{animation:fade .45s ease both}
 .intro .subname{margin:-14px 0 0;font:400 clamp(11px,1.4vw,15px)/1 var(--mono);letter-spacing:.7em;margin-right:-.7em;text-transform:uppercase;color:var(--gold)}
 .notaff{margin:0 0 22px;max-width:420px;font:400 12px/1.7 var(--mono);color:var(--mute)}
 .logo span{text-transform:uppercase}
+
+.brief{padding:clamp(24px,5vw,60px) clamp(18px,6vw,110px) clamp(70px,10vw,140px)}
+.brief dl{margin:0;max-width:820px;border-top:1px solid var(--line)}
+.brow{display:grid;grid-template-columns:minmax(120px,200px) 1fr;gap:clamp(16px,4vw,50px);padding:clamp(18px,2.4vw,28px) 0;border-bottom:1px solid var(--line)}
+.brow dt{font:400 11px/1.8 var(--mono);letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
+.brow dd{margin:0;font:italic 300 clamp(20px,2.2vw,28px)/1.5 var(--serif);color:var(--ink)}
+.proj+.proj{border-top:1px solid var(--line);margin-top:clamp(20px,6vw,80px)}
+@media(max-width:700px){.brow{grid-template-columns:1fr;gap:8px}}

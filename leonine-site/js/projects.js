@@ -13,17 +13,37 @@
 
    A photo can also carry a side note, shown beside it: add  label: "...", note: "..."  to that photo's line.
 
+   A project with no photos yet shows as an in-progress brief (subject, timeline, places, why),
+   with the latest finished project shown in full underneath.
+
    status: "current"  -> the project shown first, in full, on the home page.
            "archive"  -> listed under Archive; opens when clicked.
    Only ONE project should be "current".
    ============================================================ */
 window.PROJECTS = [
   {
+    id: "arris-cant",
+    num: 1,                    // shown as 01
+    title: "Arris Cant",
+    tagline: "Imposing and grand architecture",
+    state: "In progress",
+    ends: "31/12/2027",
+    status: "current",
+    brief: {
+      subject: "Architecture, specifically imposing and grand buildings.",
+      timeline: "Ends 31 December 2027.",
+      places: ["Padua, Italy", "Kyoto, Japan", "Warsaw, Poland", "London, England"],
+      why: "This builds into my next field of inspiration. It develops my photography in a way that excites me and lets me experiment with a whole new world of photography."
+    },
+    photos: []                 // add photos here when you have them
+  },
+  {
     id: "nascence",            // used in the web address, no spaces
+    num: 0,                    // shown as 00 (optional, otherwise numbered by order)
     title: "Nascence",
     tagline: "Finding my style",
     era: "pre NOV26",          // shown as "Era: pre NOV26". Or use year / place instead.
-    status: "current",
+    status: "archive",
     note: "Selected from hundreds upon hundreds of frames, these are the ones that meant the most to me and began to define my style in photography, transforming what I shoot from basic family holiday photos into meaningful pieces of art.",
     folder: "images/photos/",  // where this project's photos live
     photos: [
